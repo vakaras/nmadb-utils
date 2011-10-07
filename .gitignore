@@ -1,6 +1,7 @@
 .installed.cfg
 .mr.developer.cfg
 .coverage
+bootstrap.py
 bin/buildout
 bin/coverage
 bin/ctags
