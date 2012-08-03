@@ -98,7 +98,15 @@ class DownloadSelectedMixin(object):
         """
 
         if sheet_mapping is None:
-            sheet_mapping = self.sheet_mapping
+            if hasattr(self, 'sheet_mapping'):
+                sheet_mapping = self.sheet_mapping
+            else:
+                sheet_mapping = [
+                        (
+                            column.replace(u'__', u':'),
+                            column.split(u'__'))
+                        for column in self.list_display
+                        ]
         try:
             writer = SheetWriter.plugins[writer_type]
             data = self.dump_query_to_sheet(queryset, sheet_mapping)
