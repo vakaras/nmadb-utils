@@ -105,7 +105,7 @@ class DownloadSelectedMixin(object):
                         (
                             column.replace(u'__', u':'),
                             column.split(u'__'))
-                        for column in self.list_display
+                        for column in self.list_display[1:]
                         ]
         try:
             writer = SheetWriter.plugins[writer_type]
