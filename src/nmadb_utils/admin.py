@@ -17,6 +17,9 @@ class DownloadSelectedMixin(object):
 
     download_actions = (
             'download_custom_selected',
+            'download_selected_as_csv',
+            'download_selected_as_ods',
+            'download_selected_as_UTF16Tab_csv',
             )
 
     def dump_query_to_sheet(self, queryset, sheet_mapping, sheet=None):
