@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<p>Select download selection (they can be created in admin page) and
+file with partial data:</p>
+
+<form enctype="multipart/form-data" action="" method="post">{% csrf_token %}
+
+    {{ form }}
+
+    <input type="hidden" name="action" value="fill_missing" />
+    <input type="submit" name="apply" value="Fill &amp; Download" />
+</form>
+
+{% endblock %}

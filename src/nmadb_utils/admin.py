@@ -3,24 +3,36 @@ from django.shortcuts import render
 from django import forms
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse
+from django.contrib.contenttypes.models import ContentType
 
 from pysheets.sheet import Sheet
 from pysheets.spreadsheet import SpreadSheet
 from pysheets.writers import SheetWriter, SpreadSheetWriter
 
+from django_db_utils.forms import SpreadSheetField
+
 from nmadb_utils import models
+
+
+def get_field_value(obj, parts):
+    """ Returns the value of the object field.
+
+    If it is callable, then returns its result.
+    """
+    value = obj
+    try:
+        for part in parts:
+            value = getattr(value, part)
+        if hasattr(value, '__call__'):
+            value = value()
+    except Exception as e:
+        value = _(u'Error: {0}').format(e)
+    return value
 
 
 class DownloadSelectedMixin(object):
     """ Download selected mixin for ModelAdmin.
     """
-
-    download_actions = (
-            'download_custom_selected',
-            'download_selected_as_csv',
-            'download_selected_as_ods',
-            'download_selected_as_UTF16Tab_csv',
-            )
 
     def dump_query_to_sheet(self, queryset, sheet_mapping, sheet=None):
         """ Dumps query to sheet.
@@ -42,15 +54,7 @@ class DownloadSelectedMixin(object):
         for obj in queryset.select_related(*related):
             info = {}
             for caption, field in mapping:
-                value = obj
-                try:
-                    for part in field:
-                        value = getattr(value, part)
-                except Exception as e:
-                    value = _(u'Error: {0}').format(e)
-                if hasattr(value, '__call__'):
-                    value = value()
-                info[caption] = unicode(value)
+                info[caption] = unicode(get_field_value(obj, field))
             sheet.append_dict(info)
 
         return sheet
@@ -96,6 +100,7 @@ class DownloadSelectedMixin(object):
 
         :param writer_type: Sheet writer short name.
         """
+
 
         if sheet_mapping is None:
             if hasattr(self, 'sheet_mapping'):
@@ -152,12 +157,161 @@ class DownloadSelectedMixin(object):
             _(u'Download as UTF16 CSV.'))
 
 
-class ModelAdmin(DownloadSelectedMixin, admin.ModelAdmin):
+class AllObjectsActionMixin(object):
+    """ Perform action on all objects without selecting them.
+
+    .. todo::
+        Make to work.
+    """
+
+    def response_action(self, request, queryset):
+        """ Overriding to allow calling without selecting any objects.
+
+        Based on `answer on StackOverflow
+        <http://stackoverflow.com/questions/4500924/django-admin-action-without-selecting-objects>`_.
+        """
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        data = request.POST.copy()
+        print 'Veikia 1'
+        if (data['action'] in self.actions_without_selection):
+            print 'Veikia 2'
+            if len(selected) == 0:
+                print 'Veikia 3'
+                ct = ContentType.objects.get_for_model(queryset.model)
+                klass = ct.model_class()
+                queryset = klass.objects.all()
+                return getattr(self, data['action'])(request, queryset)
+            else:
+                print 'Veikia 4'
+                msg = _(u'For this action no items must be selected. '
+                        u'No items have been changed.')
+                self.message_user(request, msg)
+                return None
+        else:
+            print 'Veikia 5'
+            return super(AllObjectsActionMixin, self).response_action(
+                    request, queryset)
+
+
+class FillMisingMixin(object):
+    """ Fill missing data in sheet from database mixin for ModelAdmin.
+    """
+
+    def generate_spreadsheet(self, klass, sheet_mapping, data):
+        """ Generates spreadsheet.
+        """
+
+        mapping = []
+        mapping_dict = {}
+        captions = []
+        related = set()
+        for caption, parts in sheet_mapping:
+            captions.append(caption)
+            mapping.append((caption, parts))
+            mapping_dict[caption] = parts
+            if len(parts) > 1:
+                related.add(u'__'.join(parts[:-1]))
+
+        spreadsheet = SpreadSheet()
+        make_provided = lambda x: x + u' (provided)'
+        for sheet in data:
+            keys = set(sheet.captions) & set(captions)
+            provided_captions = [
+                    make_provided(caption) for caption in sheet.captions]
+            new_sheet = spreadsheet.create_sheet(
+                    sheet.name,
+                    captions=provided_captions + captions)
+            fill_columns = len(captions)
+            for row in sheet:
+                query = dict(
+                        (u'__'.join(mapping_dict[key]), row[key])
+                        for key in keys
+                        )
+                try:
+                    obj = klass.objects.get(**query)
+                except Exception as e:
+                    new_sheet.append_iterable(
+                            list(row) +
+                            [_(u'Error: {0}').format(e)] * fill_columns)
+                else:
+                    info = dict(
+                            (make_provided(key), row[key])
+                            for key in row.keys())
+                    for caption, field in mapping:
+                        info[caption] = unicode(
+                                get_field_value(obj, field))
+                    new_sheet.append_dict(info)
+        return spreadsheet
+
+    class FillMissingForm(forms.Form):
+        """ Simple select field.
+        """
+        _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
+        selection = forms.ModelChoiceField(models.DownloadSelection.objects)
+        spreadsheet = SpreadSheetField(sheet_name=_(u'Data'))
+
+    def fill_missing(self, request, queryset):
+        """ Allows to download sheet filled with missing data from
+        database.
+
+        Settings are stored in database.
+        """
+        form = None
+        if 'apply' in request.POST:
+            form = self.FillMissingForm(request.POST, request.FILES)
+
+            if form.is_valid():
+                selection = form.cleaned_data['selection']
+                mapping = []
+                for row in selection.query.splitlines():
+                    parts = row.split(u':')
+                    field = parts[-1].strip()
+                    caption = u':'.join(parts[:-1])
+                    mapping.append((caption, field.split(u'__')))
+
+                data = form.cleaned_data['spreadsheet']
+                ct = ContentType.objects.get_for_model(queryset.model)
+                klass = ct.model_class()
+                spreadsheet = self.generate_spreadsheet(
+                        klass,
+                        mapping,
+                        data,
+                        )
+                writer = SpreadSheetWriter.plugins[u'ODS']
+                response = HttpResponse(mimetype=writer.mime_type)
+                response['Content-Disposition'] = (
+                        _(u'attachment; filename=data.{0}').format(
+                            writer.file_extensions[0]))
+                spreadsheet.write(response, writer=writer())
+                return response
+
+        if not form:
+            form = self.FillMissingForm(
+                    initial={'_selected_action': request.POST.getlist(
+                        admin.ACTION_CHECKBOX_NAME)})
+
+        return render(
+                request,
+                'admin/fill_missing.html',
+                {'form': form,})
+    fill_missing.short_description = _(u'Fill missing')
+
+
+class ModelAdmin(
+        FillMisingMixin,
+        DownloadSelectedMixin,
+        admin.ModelAdmin,
+        ):
     """ Base model admin for NMADB.
     """
 
-    actions = list(DownloadSelectedMixin.download_actions)
-
+    actions = [
+            'download_custom_selected',
+            'download_selected_as_csv',
+            'download_selected_as_ods',
+            'download_selected_as_UTF16Tab_csv',
+            'fill_missing',
+            ]
 
 
 class DownloadSelectionAdmin(ModelAdmin):
