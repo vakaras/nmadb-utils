@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-04 16:40+0300\n"
+"POT-Creation-Date: 2012-08-08 20:51+0300\n"
 "PO-Revision-Date: 2012-08-04 16:41+0300\n"
 "Last-Translator: Vytautas Astrauskas <vastrauskas@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,35 +15,48 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n"
+"%100<10 || n%100>=20) ? 1 : 2)\n"
 
-#: admin.py:50
+#: admin.py:29 admin.py:235
 msgid "Error: {0}"
 msgstr "Klaida: {0}"
 
-#: admin.py:92
+#: admin.py:96
 msgid "Download selected"
 msgstr "Atsisiųsti pasirinktus"
 
-#: admin.py:121
+#: admin.py:126 admin.py:283
 msgid "attachment; filename=data.{0}"
 msgstr "attachment; filename=duomenys.{0}"
 
-#: admin.py:130
+#: admin.py:135
 msgid "Download as CSV."
 msgstr "Atsisiųsti CSV formatu."
 
-#: admin.py:136
+#: admin.py:141
 msgid "Download as ODS."
 msgstr "Atsisiųsti ODS formatu."
 
-#: admin.py:146
+#: admin.py:151
 msgid "attachment; filename=data.csv"
 msgstr "attachment; filename=duomenys.csv"
 
-#: admin.py:152
+#: admin.py:157
 msgid "Download as UTF16 CSV."
 msgstr "Atsisiųsti UTF16CSV formatu."
+
+#: admin.py:186
+msgid "For this action no items must be selected. No items have been changed."
+msgstr ""
+
+#: admin.py:251
+msgid "Data"
+msgstr ""
+
+#: admin.py:297
+msgid "Fill missing"
+msgstr ""
 
 #: models.py:10
 msgid "Comma separated values"
@@ -70,8 +83,11 @@ msgid "query"
 msgstr "užklausa"
 
 #: models.py:35
-msgid "Each column have to be on separate row, in form: column caption: field name"
-msgstr "Kiekvieno stulpelio aprašymas turi būti atskiroje eilutėje. Eilučių forma: „stulpelio antraštė:lauko vardas“."
+msgid ""
+"Each column have to be on separate row, in form: column caption: field name"
+msgstr ""
+"Kiekvieno stulpelio aprašymas turi būti atskiroje eilutėje. Eilučių forma: "
+"„stulpelio antraštė:lauko vardas“."
 
 #: models.py:41
 msgid "download selection"
@@ -81,3 +97,30 @@ msgstr "atsisiuntmo pasirinkimas"
 msgid "download selections"
 msgstr "atsisiuntimo pasirinkimai"
 
+#: templates/admin/file-form.html:8
+msgid "Home"
+msgstr ""
+
+#: templates/admin/file-form.html:27
+msgid "Upload"
+msgstr ""
+
+#: templates/admin/nmadb-index.html:8
+msgid "NMADB Actions"
+msgstr ""
+
+#: templates/admin/nmadb-index.html:12 templates/admin/nmadb-index.html:31
+msgid "None available"
+msgstr ""
+
+#: templates/admin/nmadb-index.html:26
+msgid "Recent Actions"
+msgstr ""
+
+#: templates/admin/nmadb-index.html:27
+msgid "My Actions"
+msgstr ""
+
+#: templates/admin/nmadb-index.html:45
+msgid "Unknown content"
+msgstr ""

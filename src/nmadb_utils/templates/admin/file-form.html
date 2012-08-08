@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% if not is_popup %}
+  {% block breadcrumbs %}
+    <div class="breadcrumbs">
+      <a href="{{ admin_index_url }}">
+        {% trans "Home" %}
+      </a>
+       &rsaquo;
+       <a href="{{ app_url }}">
+         {{ app_label|capfirst }}
+      </a>
+      &rsaquo;
+    </div>
+  {% endblock %}
+{% endif %}
+
+{% block content %}
+
+<form enctype="multipart/form-data" action="" method="post">{% csrf_token %}
+
+    {{ form }}
+
+    <input type="hidden" name="action" value="fill_missing" />
+    <input type="submit" name="apply"
+        value="{% block submit-button-value %}{% trans "Upload" %}{% endblock %}" />
+</form>
+
+{% endblock %}
