@@ -23,8 +23,8 @@ def get_field_value(obj, parts):
     try:
         for part in parts:
             value = getattr(value, part)
-        if hasattr(value, '__call__'):
-            value = value()
+            if hasattr(value, '__call__'):
+                value = value()
     except Exception as e:
         value = _(u'Error: {0}').format(e)
     return value
