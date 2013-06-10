@@ -86,8 +86,11 @@ class DownloadSelectedMixin(object):
 
         if not form:
             form = self.DownloadSelectionForm(
-                    initial={'_selected_action': request.POST.getlist(
-                        admin.ACTION_CHECKBOX_NAME)})
+                    initial={
+                        '_selected_action': [
+                            unicode(pk)
+                            for pk in queryset.values_list('id', flat=True)
+                            ]})
 
         return render(
                 request,

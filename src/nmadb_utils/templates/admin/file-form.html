@@ -20,7 +20,7 @@
 
 <form enctype="multipart/form-data" action="" method="post">{% csrf_token %}
 
-    {{ form }}
+    {{ form.as_p }}
 
     <input type="hidden" name="action" value="fill_missing" />
     <input type="submit" name="apply"
