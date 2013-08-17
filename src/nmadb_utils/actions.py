@@ -10,7 +10,8 @@ class Action(object):
 
     actions = []
 
-    def __init__(self, short_description, url_name):
+    def __init__(self, gid, short_description, url_name):
+        self.gid = gid
         self.short_description = short_description
         self.url_name = url_name
 
@@ -21,7 +22,24 @@ class Action(object):
         return reverse(self.url_name)
 
 
-def register(short_description, url_name):
+class DuplicateGid(Exception):
+    """ Duplicated gid exception.
+    """
+
+
+def register(gid, short_description, url_name):
     """ Creates action and adds to list.
     """
-    Action.actions.append(Action(short_description, url_name))
+    for action in Action.actions:
+        if gid == action.gid:
+            raise DuplicateGid(u'gid: {0}'.format(gid))
+    Action.actions.append(Action(gid, short_description, url_name))
+
+
+def unregister(gid):
+    """ Deletes action with specified gid.
+    """
+    for i, action in enumerate(Action.actions):
+        if gid == action.gid:
+            del Action.actions[i]
+            return

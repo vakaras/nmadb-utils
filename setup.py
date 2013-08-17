@@ -21,6 +21,10 @@ setup(
             'pysheets',
             'django_db_utils',
             'odfpy',
+            'reportlab',
+            'pisa',
+            'html5lib',
+            'pypdf',
             ],
         scripts=[],                     # List of python script files.
         #data_files=[('/etc/init.d', ['init-script'])]
