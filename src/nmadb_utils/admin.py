@@ -21,10 +21,17 @@ def get_field_value(obj, parts):
     """
     value = obj
     try:
-        for part in parts:
+        for i, part in enumerate(parts):
             value = getattr(value, part)
             if hasattr(value, '__call__'):
                 value = value()
+            if hasattr(value, '__iter__'):
+                value = u'{{{0}}}'.format(u';'.join(
+                        get_field_value(obj, parts[i+1:])
+                        for obj in value
+                        ))
+                break
+        value = unicode(value)
     except Exception as e:
         value = _(u'Error: {0}').format(e)
     return value
