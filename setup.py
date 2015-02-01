@@ -22,7 +22,7 @@ setup(
             'django_db_utils',
             'odfpy',
             'reportlab',
-            'pisa',
+            'xhtml2pdf',
             'html5lib',
             'pypdf',
             ],
