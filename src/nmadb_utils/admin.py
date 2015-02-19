@@ -131,7 +131,7 @@ class DownloadSelectedMixin(object):
             sheet = data.create_sheet(u'Duomenys')
             self.dump_query_to_sheet(queryset, sheet_mapping, sheet)
 
-        response = HttpResponse(mimetype=writer.mime_type)
+        response = HttpResponse(content_type=writer.mime_type)
         response['Content-Disposition'] = (
                 _(u'attachment; filename=data.{0}').format(
                     writer.file_extensions[0]))
@@ -156,7 +156,7 @@ class DownloadSelectedMixin(object):
         writer = SheetWriter.plugins[u'CSV']
         data = utils.dump_query_to_sheet(queryset)
 
-        response = HttpResponse(mimetype=writer.mime_type)
+        response = HttpResponse(content_type=writer.mime_type)
         response['Content-Disposition'] = (
                 _('attachment; filename=data.csv'))
         data.write(
@@ -288,7 +288,7 @@ class FillMisingMixin(object):
                         data,
                         )
                 writer = SpreadSheetWriter.plugins[u'ODS']
-                response = HttpResponse(mimetype=writer.mime_type)
+                response = HttpResponse(content_type=writer.mime_type)
                 response['Content-Disposition'] = (
                         _(u'attachment; filename=data.{0}').format(
                             writer.file_extensions[0]))
